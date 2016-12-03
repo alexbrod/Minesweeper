@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Minesweeper</string>
+    <string name="difficulty">Difficulty</string>
+    <string name="new_game">New Game</string>
+    <string name="records">Records</string>
+    <string name="settings">settings</string>
+</resources>
