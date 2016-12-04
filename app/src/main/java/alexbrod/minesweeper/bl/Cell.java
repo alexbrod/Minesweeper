@@ -5,6 +5,8 @@ package alexbrod.minesweeper.bl;
  */
 public class Cell {
     private boolean isRevealed;
+    private int row;
+    private int col;
 
     public Cell(){
         isRevealed = false;
@@ -16,5 +18,21 @@ public class Cell {
 
     public void setRevealed(boolean revealed) {
         isRevealed = revealed;
+    }
+
+    public int getRow() {
+        return row;
+    }
+
+    public void setRow(int row) {
+        this.row = row;
+    }
+
+    public int getCol() {
+        return col;
+    }
+
+    public void setCol(int col) {
+        this.col = col;
     }
 }
