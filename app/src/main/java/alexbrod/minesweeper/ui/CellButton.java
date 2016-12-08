@@ -2,24 +2,27 @@ package alexbrod.minesweeper.ui;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Switch;
 
 
 /**
  * Created by Alex Brod on 11/24/2016.
  */
 
-public class CellButton extends Button implements View.OnClickListener{
+public class CellButton extends Button implements View.OnClickListener, View.OnLongClickListener{
 
     private int col;
     private int row;
     private CellButtonOnClickListener cellButtonOnClickListener;
+    private GradientDrawable gradientDrawable;
 
     public CellButton(Context context) {
         super(context);
         setOnClickListener(this);
+        setOnLongClickListener(this);
+        gradientDrawable = new GradientDrawable();
     }
 
     public void setPosition(int row, int col) {
@@ -43,8 +46,8 @@ public class CellButton extends Button implements View.OnClickListener{
         this.row = row;
     }
 
-    public void setCellButtonOnClickListener(CellButtonOnClickListener listener) {
-        this.cellButtonOnClickListener = listener;
+    public void setCellButtonOnClickListener(CellButtonOnClickListener cellButtonOnClickListener) {
+        this.cellButtonOnClickListener = cellButtonOnClickListener;
     }
 
     @Override
@@ -78,7 +81,16 @@ public class CellButton extends Button implements View.OnClickListener{
             case 8:
                 setTextColor(Color.BLACK);
                 break;
-                
+
         }
+    }
+
+    @Override
+    public boolean onLongClick(View view) {
+        return cellButtonOnClickListener.cellButtonOnLongClick(this);
+    }
+
+    public GradientDrawable getGradientDrawable() {
+        return gradientDrawable;
     }
 }

@@ -21,6 +21,7 @@ public class MenuActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(MenuActivity.this, GameActivity.class);
                 startActivity(intent);
+
             }
         });
     }

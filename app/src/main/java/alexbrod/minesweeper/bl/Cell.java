@@ -5,11 +5,14 @@ package alexbrod.minesweeper.bl;
  */
 public class Cell {
     private boolean isRevealed;
+    private boolean isEmpty;
+    private boolean isFlagged;
     private int row;
     private int col;
 
     public Cell(){
         isRevealed = false;
+        isEmpty = true;
     }
 
     public boolean isRevealed() {
@@ -34,5 +37,21 @@ public class Cell {
 
     public void setCol(int col) {
         this.col = col;
+    }
+
+    public boolean isEmpty(){
+        return isEmpty;
+    }
+
+    public void setEmpty(boolean empty) {
+        isEmpty = empty;
+    }
+
+    public boolean getIsFlagged() {
+        return isFlagged;
+    }
+
+    public void setFlagged(boolean flagged) {
+        isFlagged = flagged;
     }
 }

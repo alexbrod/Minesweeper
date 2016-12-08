@@ -8,4 +8,5 @@ import alexbrod.minesweeper.ui.CellButton;
 
 public interface CellButtonOnClickListener  {
     void cellButtonOnClick(CellButton b);
+    boolean cellButtonOnLongClick(CellButton b);
 }

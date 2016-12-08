@@ -8,8 +8,10 @@ public class Number extends Cell {
 
     private int value;
 
-    public Number(int value){
+    public Number(int value)
+    {
         this.value = value;
+        setEmpty(false);
     }
 
 

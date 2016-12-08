@@ -1,5 +1,11 @@
 package alexbrod.minesweeper.bl;
 
+import android.os.Handler;
+
+import java.util.Timer;
+import java.util.TimerTask;
+
+import alexbrod.minesweeper.bl.GameInterfaceListener.CELL_CONTENT;
 /**
  * Created by Alex Brod on 11/25/2016.
  */
@@ -11,6 +17,10 @@ public class GameBoard {
     private int minesNum;
     private int leftMines;
     private GameInterfaceListener gameInterfaceListener;
+    private Timer playTimer;
+    private boolean firstCellReveal;
+    private int passedTime;
+
 
     public GameBoard(int rows, int cols, int minesNum) {
         this.rows = rows;
@@ -19,8 +29,10 @@ public class GameBoard {
         this.leftMines = minesNum;
         gameMatrix = new Cell[rows][cols];
         initGameMatrix();
-        setMinesInRandomCells(0, rows * cols);
-
+        setMinesInRandomCells();
+        firstCellReveal = false;
+        passedTime = 0;
+        stopTimer();
     }
 
 
@@ -35,6 +47,18 @@ public class GameBoard {
         }
     }
 
+    private void setMinesInRandomCells(){
+        int index;
+        for (int i = 0; i < minesNum; i++) {
+            index = (int)(Math.random() * (rows * cols));
+            if(!(gameMatrix[index/rows][index%rows] instanceof Mine)){
+                gameMatrix[index/rows][index%rows] = new Mine();
+                setNumbersAroundMine(index/rows,index%rows);
+            }
+        }
+    }
+
+    /*
     private void setMinesInRandomCells(int from, int to){
         if(leftMines <= 0) {
             return;
@@ -49,7 +73,7 @@ public class GameBoard {
         setMinesInRandomCells(from,index);
         setMinesInRandomCells(++index,to);
     }
-
+    */
     private void setNumbersAroundMine(int mineRow, int mineCol){
         /*
         go through all cells around the mine and put numbers where
@@ -76,43 +100,141 @@ public class GameBoard {
     }
 
     public void revealCell(int row, int col){
+        if(!firstCellReveal){
+            startTimer();
+        }
         Cell cell = gameMatrix[row][col];
         if(!cell.isRevealed()){
-            gameMatrix[row][col].setRevealed(true);
+            if(cell.getIsFlagged()){
+                return;
+            }
             if(cell instanceof Mine){
-                gameInterfaceListener.onCellRevealed(row,col, GameInterfaceListener.CELL_CONTENT.MINE);
+                gameMatrix[row][col].setRevealed(true);
+                gameInterfaceListener.onCellRevealed(row,col, CELL_CONTENT.MINE);
                 gameOver();
                 return;
             }
-
-            if(cell instanceof Number){
-                gameInterfaceListener.onCellRevealed(row,col, GameInterfaceListener.CELL_CONTENT.NUMBER);
-            }else{
-                gameInterfaceListener.onCellRevealed(row,col, GameInterfaceListener.CELL_CONTENT.EMPTY);
-            }
+            //check for numbers or empty cells
+            checkCellChain(row,col);
 
             checkVictory();
+        }
+    }
 
-
-
+    private void checkCellChain(int row, int col) {
+        Cell cell;
+        try{
+            cell = gameMatrix[row][col];
+        }catch(NullPointerException | IndexOutOfBoundsException e){
+            return;
+        }
+        if(cell.isRevealed() || cell.getIsFlagged()){
+            return;
+        }
+        if(cell.isEmpty()){
+            cell.setRevealed(true);
+            gameInterfaceListener.onCellRevealed(row,col, CELL_CONTENT.EMPTY);
+            checkCellChain(row - 1, col - 1);
+            checkCellChain(row - 1, col);
+            checkCellChain(row, col - 1);
+            checkCellChain(row - 1, col + 1);
+            checkCellChain(row + 1, col - 1);
+            checkCellChain(row, col + 1);
+            checkCellChain(row + 1, col);
+            checkCellChain(row + 1, col + 1);
+        }else{
+            if(cell instanceof Number){
+                cell.setRevealed(true);
+                gameInterfaceListener.onCellRevealed(row,col, CELL_CONTENT.NUMBER);
+            }
+            return;
         }
 
     }
 
     private void checkVictory() {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                Cell cell = gameMatrix[i][j];
+                if(!cell.isRevealed() && !(cell instanceof Mine)){
+                    return;
+                }
+            }
+        }
+        stopTimer();
         gameInterfaceListener.onVictory();
+
     }
 
     private void gameOver() {
+        //reveal all mines
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                Cell cell = gameMatrix[i][j];
+                if(cell instanceof Mine){
+                    cell.setRevealed(true);
+                    gameInterfaceListener.onCellRevealed(i,j, CELL_CONTENT.MINE);
+                }
+            }
+        }
+        stopTimer();
         gameInterfaceListener.onGameOver();
 
-    }
-
-    public Cell[][] getGameBoardView(){
-        return gameMatrix;
     }
 
     public void setGameInterfaceListener(GameInterfaceListener gameInterfaceListener) {
         this.gameInterfaceListener = gameInterfaceListener;
     }
+
+    public int getValueOfNumberCell(int row, int col){
+        return ((Number)gameMatrix[row][col]).getValue();
+    }
+
+    public void flagEvent(int row, int col) {
+        Cell cell = gameMatrix[row][col];
+        if(cell.isRevealed()){
+            return;
+        }
+        if(cell.getIsFlagged()){
+            cell.setFlagged(false);
+            gameInterfaceListener.onClearFlag(row, col);
+            gameInterfaceListener.updateNumOfMinesView(++leftMines);
+        }else{
+            cell.setFlagged(true);
+            gameInterfaceListener.onSetFlag(row, col);
+            gameInterfaceListener.updateNumOfMinesView(--leftMines);
+        }
+    }
+
+    public void startTimer() {
+        //check with lecturer
+        firstCellReveal = true;
+        passedTime = 0;
+        final Handler handler = new Handler();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        gameInterfaceListener.updateTimeView(++passedTime);
+                    }
+                });
+            }
+        };
+        playTimer = new Timer();
+        playTimer.schedule(timerTask, 1000, 1000);
+    }
+
+    private void stopTimer(){
+        if(playTimer != null){
+            playTimer.cancel();
+            playTimer.purge();
+        }
+    }
+
+    public void endGame(){
+        stopTimer();
+    }
+
 }
