@@ -13,7 +13,6 @@ import android.view.Display;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.GridLayout;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import alexbrod.minesweeper.R;
@@ -23,9 +22,10 @@ import alexbrod.minesweeper.bl.GameInterfaceListener;
 
 public class GameActivity extends AppCompatActivity implements CellButtonOnClickListener, GameInterfaceListener {
     private final int GAME_BOARD_RETIO = 2;
-    private int columnCount = 7;
-    private int rowCount = 7;
-    private int minesNum = 7;
+
+    private int columnCount;
+    private int rowCount;
+    private int minesNum;
 
     private TextView txtTimer;
     private TextView txtMineNum;
@@ -51,6 +51,13 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
         gridLayout.setAlignmentMode(GridLayout.ALIGN_BOUNDS);
         gridLayout.setRowOrderPreserved(false);
 
+        gameBoard = new GameBoard(this);
+        gameBoard.setGameInterfaceListener(this);
+
+        columnCount = gameBoard.getCols();
+        rowCount = gameBoard.getRows();
+        minesNum = gameBoard.getMinesNum();
+
         //start listening to bl events
         initButtonsGrid();
 
@@ -58,15 +65,12 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
         txtMineNum.setText(String.format("%d",minesNum));
         txtTimer = (TextView) findViewById(R.id.txtTimer);
 
-        gameBoard = new GameBoard(rowCount, columnCount, minesNum);
-        gameBoard.setGameInterfaceListener(this);
 
 
     }
 
     @Override
     public void onBackPressed() {
-        gameBoard.endGame();
         this.finish();
     }
 

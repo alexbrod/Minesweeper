@@ -1,5 +1,6 @@
 package alexbrod.minesweeper.bl;
 
+import android.content.Context;
 import android.os.Handler;
 
 import java.util.Timer;
@@ -22,11 +23,9 @@ public class GameBoard {
     private int passedTime;
 
 
-    public GameBoard(int rows, int cols, int minesNum) {
-        this.rows = rows;
-        this.cols = cols;
-        this.minesNum = minesNum;
-        this.leftMines = minesNum;
+    public GameBoard(Context context) {
+        //ask lecturer how can I avoid entering context
+        setGameParametersAccordingLevel(context);
         gameMatrix = new Cell[rows][cols];
         initGameMatrix();
         setMinesInRandomCells();
@@ -35,6 +34,23 @@ public class GameBoard {
         stopTimer();
     }
 
+
+    private void setGameParametersAccordingLevel(Context context){
+        switch (Levels.getLevel(context)){
+            case Levels.NOVICE:
+                rows = cols = 5;
+                minesNum = leftMines = 3;
+                break;
+            case Levels.ADVANCED:
+                rows = cols = 7;
+                minesNum = leftMines = 7;
+                break;
+            case Levels.EXPERT:
+                rows = cols = 10;
+                minesNum = leftMines = 10;
+                break;
+        }
+    }
 
     private void initGameMatrix(){
         for (int i = 0; i < rows ; i++) {
@@ -49,11 +65,13 @@ public class GameBoard {
 
     private void setMinesInRandomCells(){
         int index;
-        for (int i = 0; i < minesNum; i++) {
+        int tmpMinesNum = 0;
+        while (tmpMinesNum != minesNum ) {
             index = (int)(Math.random() * (rows * cols));
             if(!(gameMatrix[index/rows][index%rows] instanceof Mine)){
                 gameMatrix[index/rows][index%rows] = new Mine();
                 setNumbersAroundMine(index/rows,index%rows);
+                tmpMinesNum++;
             }
         }
     }
@@ -233,8 +251,15 @@ public class GameBoard {
         }
     }
 
-    public void endGame(){
-        stopTimer();
+    public int getCols() {
+        return cols;
     }
 
+    public int getRows() {
+        return rows;
+    }
+
+    public int getMinesNum() {
+        return minesNum;
+    }
 }
