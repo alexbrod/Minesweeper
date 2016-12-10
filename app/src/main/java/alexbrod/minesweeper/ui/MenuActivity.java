@@ -7,17 +7,20 @@ import android.view.View;
 import android.widget.Button;
 
 import alexbrod.minesweeper.R;
-import alexbrod.minesweeper.bl.Levels;
+import alexbrod.minesweeper.bl.SharedPrefManager;
 
 public class MenuActivity extends AppCompatActivity {
 
     private final static String LEVEL = "Level";
     private Button btnLevel;
+    private SharedPrefManager prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
+        prefs = new SharedPrefManager(this);
+        //prefs.clear();
 
         Button btnNewGame = (Button) findViewById(R.id.btnNewGame);
         btnNewGame.setOnClickListener(new View.OnClickListener() {
@@ -48,15 +51,6 @@ public class MenuActivity extends AppCompatActivity {
     }
 
     private void setLevelText(){
-        switch (Levels.getLevel(this)){
-            case Levels.NOVICE:
-                btnLevel.setText(LEVEL + "\n" + "(Novice)");
-                break;
-            case Levels.ADVANCED:
-                btnLevel.setText(LEVEL + "\n" + "(Advanced)");
-                break;
-            case Levels.EXPERT:
-                btnLevel.setText(LEVEL + "\n" + "(Expert)");
-        }
+        btnLevel.setText(LEVEL + "\n(" + prefs.intLevelToString(prefs.getLevel()) + ")");
     }
 }

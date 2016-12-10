@@ -3,6 +3,7 @@ package alexbrod.minesweeper.ui;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.TextView;
 
@@ -21,6 +23,9 @@ import alexbrod.minesweeper.bl.GameInterfaceListener;
 
 
 public class GameActivity extends AppCompatActivity implements CellButtonOnClickListener, GameInterfaceListener {
+    private static final String YOU_WON = "You Won!";
+    private static final String PLAY_AGAIN = "Do you want to play another game?";
+    private static final String GAME_OVER = "GAME OVER";
     private final int GAME_BOARD_RETIO = 2;
 
     private int columnCount;
@@ -32,6 +37,8 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
     private GameBoard gameBoard;
     private GridLayout gridLayout;
     private DisplayMetrics dm;
+    private AlertDialog.Builder alertDialog;
+    private SharedPreferences prefs;
 
 
     //------------------------ system events ---------------------------------
@@ -40,7 +47,6 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
-
         //set layout parameters
         gridLayout = (GridLayout) findViewById(R.id.gridLayout);
         WindowManager wm = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
@@ -58,9 +64,8 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
         rowCount = gameBoard.getRows();
         minesNum = gameBoard.getMinesNum();
 
-        //start listening to bl events
         initButtonsGrid();
-
+        initAlertDialog();
         txtMineNum = (TextView) findViewById(R.id.txtMines);
         txtMineNum.setText(String.format("%d",minesNum));
         txtTimer = (TextView) findViewById(R.id.txtTimer);
@@ -68,6 +73,8 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
 
 
     }
+
+
 
     @Override
     public void onBackPressed() {
@@ -131,48 +138,50 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
 
     @Override
     public void onGameOver() {
-        new AlertDialog.Builder(this)
-                .setTitle("GAME OVER!")
-                .setMessage("Do you want to play another game?")
-                .setCancelable(false)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        //start over
-                        Intent intent = new Intent(GameActivity.this, GameActivity.class);
-                        startActivity(intent);
-                        finish();
-                    }
-                })
-                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        finish();
-                    }
-                })
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .show();
+        alertDialog.setTitle(GAME_OVER);
+        alertDialog.setMessage(PLAY_AGAIN);
+        alertDialog.show();
     }
 
     @Override
     public void onVictory() {
-        new AlertDialog.Builder(this)
-                .setTitle("You Won!")
-                .setMessage("Do you want to play another game?")
-                .setCancelable(false)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        //start over
-                        Intent intent = new Intent(GameActivity.this, GameActivity.class);
-                        startActivity(intent);
-                        finish();
-                    }
-                })
-                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        finish();
-                    }
-                })
-                .setIcon(android.R.drawable.ic_dialog_info)
-                .show();
+        System.out.println("Best: " + gameBoard.getBestScore());
+        System.out.println("Current: " + gameBoard.getCurrentScore());
+        if(gameBoard.getBestScore() > gameBoard.getCurrentScore()){
+            final EditText input = new EditText(this);
+            new AlertDialog.Builder(this)
+                    .setTitle(YOU_WON)
+                    .setMessage("You Broke A Record!\nEnter name:")
+                    .setView(input)
+                    .setCancelable(false)
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                           gameBoard.setNewScore(input.getText().toString().trim());
+                            alertDialog.setTitle(YOU_WON);
+                            alertDialog.setMessage(PLAY_AGAIN);
+                            alertDialog.show();
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_info)
+                    .show();
+        }else if(gameBoard.getLastScore() > gameBoard.getCurrentScore()){
+            final EditText input = new EditText(this);
+            new AlertDialog.Builder(this)
+                    .setTitle(YOU_WON)
+                    .setMessage("You Made It To The Score Table!\nEnter name:")
+                    .setView(input)
+                    .setCancelable(false)
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            gameBoard.setNewScore(input.getText().toString().trim());
+                            alertDialog.setTitle(YOU_WON);
+                            alertDialog.setMessage(PLAY_AGAIN);
+                            alertDialog.show();
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_info)
+                    .show();
+        }
     }
 
     @Override
@@ -187,6 +196,25 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
     }
 
     //------------------- assistance methods-------------------------------
+
+    private void initAlertDialog() {
+        alertDialog = new AlertDialog.Builder(this)
+                .setCancelable(false)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        //start over
+                        Intent intent = new Intent(GameActivity.this, GameActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_info);
+    }
 
     private CellButton getButtonFromGrid(int row, int col){
         return (CellButton)gridLayout.getChildAt(row * rowCount + col);

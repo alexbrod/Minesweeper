@@ -21,11 +21,13 @@ public class GameBoard {
     private Timer playTimer;
     private boolean firstCellReveal;
     private int passedTime;
+    private SharedPrefManager prefs;
 
 
     public GameBoard(Context context) {
         //ask lecturer how can I avoid entering context
-        setGameParametersAccordingLevel(context);
+        prefs = new SharedPrefManager(context);
+        setGameParametersAccordingLevel();
         gameMatrix = new Cell[rows][cols];
         initGameMatrix();
         setMinesInRandomCells();
@@ -35,17 +37,17 @@ public class GameBoard {
     }
 
 
-    private void setGameParametersAccordingLevel(Context context){
-        switch (Levels.getLevel(context)){
-            case Levels.NOVICE:
+    private void setGameParametersAccordingLevel(){
+        switch (prefs.getLevel()){
+            case SharedPrefManager.NOVICE_LEVEL:
                 rows = cols = 5;
                 minesNum = leftMines = 3;
                 break;
-            case Levels.ADVANCED:
+            case SharedPrefManager.ADVANCED_LEVEL:
                 rows = cols = 7;
                 minesNum = leftMines = 7;
                 break;
-            case Levels.EXPERT:
+            case SharedPrefManager.EXPERT_LEVEL:
                 rows = cols = 10;
                 minesNum = leftMines = 10;
                 break;
@@ -261,5 +263,21 @@ public class GameBoard {
 
     public int getMinesNum() {
         return minesNum;
+    }
+
+    public int getCurrentScore() {
+        return passedTime;
+    }
+
+    public int getBestScore() {
+        return prefs.getBestScore(prefs.getLevel());
+    }
+
+    public int getLastScore(){
+        return prefs.getLastScore(prefs.getLevel());
+    }
+
+    public void setNewScore(String name) {
+        prefs.setNewScore(passedTime, name, prefs.getLevel());
     }
 }
