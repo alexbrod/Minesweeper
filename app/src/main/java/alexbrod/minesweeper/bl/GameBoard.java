@@ -273,8 +273,8 @@ public class GameBoard {
         return prefs.getBestScore(prefs.getLevel());
     }
 
-    public int getLastScore(){
-        return prefs.getLastScore(prefs.getLevel());
+    public int getScoreRecordSortedByTime(int ScoreRecordNum){
+        return prefs.getScoreRecordSortedByTime(prefs.getLevel(), ScoreRecordNum);
     }
 
     public void setNewScore(String name) {

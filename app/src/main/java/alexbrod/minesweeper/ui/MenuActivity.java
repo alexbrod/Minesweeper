@@ -20,7 +20,6 @@ public class MenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
         prefs = new SharedPrefManager(this);
-        //prefs.clear();
 
         Button btnNewGame = (Button) findViewById(R.id.btnNewGame);
         btnNewGame.setOnClickListener(new View.OnClickListener() {
@@ -41,6 +40,23 @@ public class MenuActivity extends AppCompatActivity {
             }
         });
 
+        Button btnRecords = (Button) findViewById(R.id.btnRecords);
+        btnRecords.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MenuActivity.this, RecordsActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        Button btnSettings = (Button) findViewById(R.id.btnSettings);
+        btnSettings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MenuActivity.this, SettingsActivity.class);
+                startActivity(intent);
+            }
+        });
         setLevelText();
     }
 

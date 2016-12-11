@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_records"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:orientation="vertical"
+    android:background="@drawable/minesweeper_background_img"
+    tools:context="alexbrod.minesweeper.ui.RecordsActivity">
+
+    <Spinner
+        android:id="@+id/spnrChooseLevel"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.1"
+        android:entries="@array/level_array">
+
+    </Spinner>
+
+    <TableLayout
+        android:id="@+id/recordsTable"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:stretchColumns="0,1,2,3"
+        android:layout_weight="0.9">
+
+        <TableRow
+            android:id="@+id/tableHead">
+            <TextView
+                android:text="No."
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/minesweeper_table"/>
+            <TextView
+                android:text="Time"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/minesweeper_table"/>
+            <TextView
+                android:text="Name"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/minesweeper_table"/>
+            <TextView
+                android:text="Date"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/minesweeper_table"/>
+
+        </TableRow>
+    </TableLayout>
+</LinearLayout>

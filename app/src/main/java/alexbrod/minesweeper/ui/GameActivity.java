@@ -3,8 +3,8 @@ package alexbrod.minesweeper.ui;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -20,6 +20,7 @@ import android.widget.TextView;
 import alexbrod.minesweeper.R;
 import alexbrod.minesweeper.bl.GameBoard;
 import alexbrod.minesweeper.bl.GameInterfaceListener;
+import alexbrod.minesweeper.bl.SharedPrefManager;
 
 
 public class GameActivity extends AppCompatActivity implements CellButtonOnClickListener, GameInterfaceListener {
@@ -38,7 +39,7 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
     private GridLayout gridLayout;
     private DisplayMetrics dm;
     private AlertDialog.Builder alertDialog;
-    private SharedPreferences prefs;
+    private SharedPrefManager prefs;
 
 
     //------------------------ system events ---------------------------------
@@ -47,6 +48,7 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+        prefs = new SharedPrefManager(this);
         //set layout parameters
         gridLayout = (GridLayout) findViewById(R.id.gridLayout);
         WindowManager wm = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
@@ -105,6 +107,7 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
         if(cellContent == CELL_CONTENT.MINE){
             cellButton.setText("M");
             gd.setColor(Color.RED);
+            //cellButton.setBackgroundResource(R.mipmap.minesweeper_launcher);
         }
         else if(cellContent == CELL_CONTENT.NUMBER){
             gd.setColor(Color.LTGRAY);
@@ -139,15 +142,12 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
     @Override
     public void onGameOver() {
         alertDialog.setTitle(GAME_OVER);
-        alertDialog.setMessage(PLAY_AGAIN);
         alertDialog.show();
     }
 
     @Override
     public void onVictory() {
-        System.out.println("Best: " + gameBoard.getBestScore());
-        System.out.println("Current: " + gameBoard.getCurrentScore());
-        if(gameBoard.getBestScore() > gameBoard.getCurrentScore()){
+        if(gameBoard.getCurrentScore() < gameBoard.getBestScore()){
             final EditText input = new EditText(this);
             new AlertDialog.Builder(this)
                     .setTitle(YOU_WON)
@@ -158,13 +158,12 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
                         public void onClick(DialogInterface dialog, int which) {
                            gameBoard.setNewScore(input.getText().toString().trim());
                             alertDialog.setTitle(YOU_WON);
-                            alertDialog.setMessage(PLAY_AGAIN);
                             alertDialog.show();
                         }
                     })
                     .setIcon(android.R.drawable.ic_dialog_info)
                     .show();
-        }else if(gameBoard.getLastScore() > gameBoard.getCurrentScore()){
+        }else if(gameBoard.getCurrentScore() < gameBoard.getScoreRecordSortedByTime(prefs.getNumOfMaxRecordsInTable() - 1)){
             final EditText input = new EditText(this);
             new AlertDialog.Builder(this)
                     .setTitle(YOU_WON)
@@ -175,12 +174,14 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
                         public void onClick(DialogInterface dialog, int which) {
                             gameBoard.setNewScore(input.getText().toString().trim());
                             alertDialog.setTitle(YOU_WON);
-                            alertDialog.setMessage(PLAY_AGAIN);
                             alertDialog.show();
                         }
                     })
                     .setIcon(android.R.drawable.ic_dialog_info)
                     .show();
+        }else{
+            alertDialog.setTitle(YOU_WON);
+            alertDialog.show();
         }
     }
 
@@ -200,6 +201,7 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
     private void initAlertDialog() {
         alertDialog = new AlertDialog.Builder(this)
                 .setCancelable(false)
+                .setMessage(PLAY_AGAIN)
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         //start over
