@@ -17,12 +17,25 @@ public class SharedPrefManager {
     public static final int NOVICE_LEVEL = 0;
     public static final int ADVANCED_LEVEL = 1;
     public static final int EXPERT_LEVEL = 2;
-    private static final String LEVEL = "Level";
-    SharedPreferences prefs;
 
-    public SharedPrefManager(Context context){
+    private static final String LEVEL = "Level";
+    private SharedPreferences prefs;
+    private static SharedPrefManager sharedPrefManager ;
+
+    // private constructor for singleton
+    private SharedPrefManager(Context context) {
         prefs = context.getSharedPreferences("alexbrod.minesweeper", Context.MODE_PRIVATE);
     }
+
+    // get singleton method
+    public static SharedPrefManager getInstance(Context context){
+        if (sharedPrefManager == null) {
+            sharedPrefManager = new SharedPrefManager(context);
+        }
+        return sharedPrefManager;
+    }
+
+    // ---------------------- getters and setters -------------------------
 
     public void setLevel(int level){
         prefs.edit().putInt(LEVEL,level).commit();
@@ -32,8 +45,30 @@ public class SharedPrefManager {
         return prefs.getInt(LEVEL, ADVANCED_LEVEL);
     }
 
+    private RecordsList getRecordList(int level){
+        Gson gson = new Gson();
+        String json = prefs.getString(intLevelToString(level) + "List", "");
+        if(json.isEmpty()){
+            return null;
+        }else{
+            return gson.fromJson(json, RecordsList.class);
+        }
+    }
+
+    // -------------------------- score methods ----------------------------
+
     public int getBestScore(int level) {
         return getBestScoreRecord(level).getTime();
+    }
+
+
+    private ScoreRecord getBestScoreRecord(int level){
+        RecordsList list = getRecordList(level);
+        if(list == null){
+            return new ScoreRecord();
+        }else{
+            return list.getShortestTimeRecord();
+        }
     }
 
     public int getScoreRecordSortedByTime(int level, int scoreRecordNum){
@@ -47,43 +82,6 @@ public class SharedPrefManager {
         }else{
             return list.get(scoreRecordNum);
         }
-    }
-
-    private ScoreRecord getBestScoreRecord(int level){
-        RecordsList list = getRecordList(level);
-        if(list == null){
-            return new ScoreRecord();
-        }else{
-            return list.getShortestTimeRecord();
-        }
-    }
-
-
-
-    private RecordsList getRecordList(int level){
-        Gson gson = new Gson();
-        String json = prefs.getString(intLevelToString(level) + "List", "");
-        if(json.isEmpty()){
-            return null;
-        }else{
-            return gson.fromJson(json, RecordsList.class);
-        }
-    }
-
-    public String intLevelToString(int level){
-        String str = "";
-        switch (level){
-            case SharedPrefManager.NOVICE_LEVEL:
-                str = "Novice";
-                break;
-            case SharedPrefManager.ADVANCED_LEVEL:
-                str = "Advanced";
-                break;
-            case SharedPrefManager.EXPERT_LEVEL:
-                str = "Expert";
-                break;
-        }
-        return str;
     }
 
 
@@ -104,9 +102,25 @@ public class SharedPrefManager {
         prefsEditor.commit();
     }
 
-    public void clear() {
-        prefs.edit().clear().commit();
+    // ------------------- convert methods -------------------------------
+
+    public String intLevelToString(int level){
+        String str = "";
+        switch (level){
+            case SharedPrefManager.NOVICE_LEVEL:
+                str = "Novice";
+                break;
+            case SharedPrefManager.ADVANCED_LEVEL:
+                str = "Advanced";
+                break;
+            case SharedPrefManager.EXPERT_LEVEL:
+                str = "Expert";
+                break;
+        }
+        return str;
     }
+
+    //------------------------- sort methods ----------------------------
 
     public RecordsList getRecordsListSortedByTime(int level){
         ArrayList<ScoreRecord> al = getRecordList(level);
@@ -117,6 +131,7 @@ public class SharedPrefManager {
         return (RecordsList) al;
     }
 
+    // ------------------------- misc methods ------------------------------------
     public void setNumOfMaxRecordsInTable(int numOfMaxRecordsInTable) {
         prefs.edit().putInt("NumOfMaxRecordsInTable",numOfMaxRecordsInTable).commit();
     }

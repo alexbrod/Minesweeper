@@ -25,6 +25,8 @@ public class CellButton extends Button implements View.OnClickListener, View.OnL
         gradientDrawable = new GradientDrawable();
     }
 
+    // -------------------- getters and setters --------------------------------------
+
     public void setPosition(int row, int col) {
         this.row = row;
         this.col = col;
@@ -50,9 +52,18 @@ public class CellButton extends Button implements View.OnClickListener, View.OnL
         this.cellButtonOnClickListener = cellButtonOnClickListener;
     }
 
+    public GradientDrawable getGradientDrawable() {
+        return gradientDrawable;
+    }
+
     @Override
     public void onClick(View view) {
         cellButtonOnClickListener.cellButtonOnClick(this);
+    }
+
+    @Override
+    public boolean onLongClick(View view) {
+        return cellButtonOnClickListener.cellButtonOnLongClick(this);
     }
 
     public void defineTextColor(int textVal){
@@ -83,14 +94,5 @@ public class CellButton extends Button implements View.OnClickListener, View.OnL
                 break;
 
         }
-    }
-
-    @Override
-    public boolean onLongClick(View view) {
-        return cellButtonOnClickListener.cellButtonOnLongClick(this);
-    }
-
-    public GradientDrawable getGradientDrawable() {
-        return gradientDrawable;
     }
 }

@@ -12,6 +12,14 @@ import alexbrod.minesweeper.bl.GameInterfaceListener.CELL_CONTENT;
  */
 
 public class GameBoard {
+
+    private static final int NOVICE_LEVEL_SIZE = 5;
+    private static final int NOVICE_LEVEL_MINES_NUM = 3;
+    private static final int ADVANCED_LEVEL_SIZE = 7;
+    private static final int ADVANCED_LEVEL_MINES_NUM = 7;
+    private static final int EXPERT_LEVEL_SIZE = 10;
+    private static final int EXPERT_LEVEL_MINES_NUM = 10;
+
     private int rows;
     private int cols;
     private Cell[][] gameMatrix;
@@ -25,8 +33,7 @@ public class GameBoard {
 
 
     public GameBoard(Context context) {
-        //ask lecturer how can I avoid entering context
-        prefs = new SharedPrefManager(context);
+        prefs = SharedPrefManager.getInstance(context);
         setGameParametersAccordingLevel();
         gameMatrix = new Cell[rows][cols];
         initGameMatrix();
@@ -36,20 +43,21 @@ public class GameBoard {
         stopTimer();
     }
 
+    // ------------------------- BL methods ---------------------------------
 
     private void setGameParametersAccordingLevel(){
         switch (prefs.getLevel()){
             case SharedPrefManager.NOVICE_LEVEL:
-                rows = cols = 5;
-                minesNum = leftMines = 3;
+                rows = cols = NOVICE_LEVEL_SIZE;
+                minesNum = leftMines = NOVICE_LEVEL_MINES_NUM;
                 break;
             case SharedPrefManager.ADVANCED_LEVEL:
-                rows = cols = 7;
-                minesNum = leftMines = 7;
+                rows = cols = ADVANCED_LEVEL_SIZE;
+                minesNum = leftMines = ADVANCED_LEVEL_MINES_NUM;
                 break;
             case SharedPrefManager.EXPERT_LEVEL:
-                rows = cols = 10;
-                minesNum = leftMines = 10;
+                rows = cols = EXPERT_LEVEL_SIZE;
+                minesNum = leftMines = EXPERT_LEVEL_MINES_NUM;
                 break;
         }
     }
@@ -61,7 +69,6 @@ public class GameBoard {
                 gameMatrix[i][j].setRow(i);
                 gameMatrix[i][j].setCol(j);
             }
-
         }
     }
 
@@ -78,26 +85,11 @@ public class GameBoard {
         }
     }
 
-    /*
-    private void setMinesInRandomCells(int from, int to){
-        if(leftMines <= 0) {
-            return;
-        }
-        if (to - from == 0) {
-            return;
-        }
-        int index = (int)(Math.random()*(to - from) + from);
-        gameMatrix[index/rows][index%rows] = new Mine();
-        setNumbersAroundMine(index/rows,index%rows);
-        leftMines -= 1;
-        setMinesInRandomCells(from,index);
-        setMinesInRandomCells(++index,to);
-    }
-    */
+
     private void setNumbersAroundMine(int mineRow, int mineCol){
         /*
         go through all cells around the mine and put numbers where
-        there is no mine, the center cell checked also from convenience
+        there is no mine, the center cell checked also from convenience reasons
         */
         for (int i = mineRow - 1; i < mineRow + 2; i++) { //3 rows
             for (int j = mineCol - 1; j < mineCol + 2; j++) { //3 cols
@@ -109,7 +101,7 @@ public class GameBoard {
                         gameMatrix[i][j] = new Number(1);
                     }
                 } catch (IndexOutOfBoundsException e){
-                    //do nothing
+                    //Tried to check cell that is out of the bounds of the matrix
                 }catch (Exception e){
                     System.out.println(e.getMessage());
                 }
@@ -119,34 +111,13 @@ public class GameBoard {
         }
     }
 
-    public void revealCell(int row, int col){
-        if(!firstCellReveal){
-            startTimer();
-        }
-        Cell cell = gameMatrix[row][col];
-        if(!cell.isRevealed()){
-            if(cell.getIsFlagged()){
-                return;
-            }
-            if(cell instanceof Mine){
-                gameMatrix[row][col].setRevealed(true);
-                gameInterfaceListener.onCellRevealed(row,col, CELL_CONTENT.MINE);
-                gameOver();
-                return;
-            }
-            //check for numbers or empty cells
-            checkCellChain(row,col);
-
-            checkVictory();
-        }
-    }
 
     private void checkCellChain(int row, int col) {
         Cell cell;
         try{
             cell = gameMatrix[row][col];
         }catch(NullPointerException | IndexOutOfBoundsException e){
-            return;
+            return; //Tried to check cell out of bound of the cell matrix
         }
         if(cell.isRevealed() || cell.getIsFlagged()){
             return;
@@ -167,9 +138,7 @@ public class GameBoard {
                 cell.setRevealed(true);
                 gameInterfaceListener.onCellRevealed(row,col, CELL_CONTENT.NUMBER);
             }
-            return;
         }
-
     }
 
     private void checkVictory() {
@@ -183,7 +152,6 @@ public class GameBoard {
         }
         stopTimer();
         gameInterfaceListener.onVictory();
-
     }
 
     private void gameOver() {
@@ -202,13 +170,7 @@ public class GameBoard {
 
     }
 
-    public void setGameInterfaceListener(GameInterfaceListener gameInterfaceListener) {
-        this.gameInterfaceListener = gameInterfaceListener;
-    }
-
-    public int getValueOfNumberCell(int row, int col){
-        return ((Number)gameMatrix[row][col]).getValue();
-    }
+    // ----------------------- GUI issued methods -------------------------
 
     public void flagEvent(int row, int col) {
         Cell cell = gameMatrix[row][col];
@@ -226,8 +188,30 @@ public class GameBoard {
         }
     }
 
+    public void revealCell(int row, int col){
+        if(!firstCellReveal){
+            startTimer();
+        }
+        Cell cell = gameMatrix[row][col];
+        if(!cell.isRevealed()){
+            if(cell.getIsFlagged()){
+                return;
+            }
+            if(cell instanceof Mine){
+                gameMatrix[row][col].setRevealed(true);
+                gameInterfaceListener.onCellRevealed(row,col, CELL_CONTENT.MINE);
+                gameOver();
+                return;
+            }
+            //check for numbers or empty cells
+            checkCellChain(row,col);
+            checkVictory();
+        }
+    }
+
+    //-------------------------- timer methods ---------------------
+
     public void startTimer() {
-        //check with lecturer
         firstCellReveal = true;
         passedTime = 0;
         final Handler handler = new Handler();
@@ -253,6 +237,8 @@ public class GameBoard {
         }
     }
 
+    //-------------------------------- getters and setters --------------------
+
     public int getCols() {
         return cols;
     }
@@ -272,6 +258,17 @@ public class GameBoard {
     public int getBestScore() {
         return prefs.getBestScore(prefs.getLevel());
     }
+
+    public void setGameInterfaceListener(GameInterfaceListener gameInterfaceListener) {
+        this.gameInterfaceListener = gameInterfaceListener;
+    }
+
+    public int getValueOfNumberCell(int row, int col){
+        return ((Number)gameMatrix[row][col]).getValue();
+    }
+
+
+    //------------------------------ DB methods -----------------------
 
     public int getScoreRecordSortedByTime(int ScoreRecordNum){
         return prefs.getScoreRecordSortedByTime(prefs.getLevel(), ScoreRecordNum);

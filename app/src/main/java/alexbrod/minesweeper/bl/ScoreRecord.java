@@ -12,6 +12,8 @@ public class ScoreRecord implements Comparable<ScoreRecord> {
     private long date;
     private String name;
 
+    // ------------------ constructors --------------------------------
+
     public ScoreRecord(){
         this(Integer.MAX_VALUE);
     }
@@ -34,13 +36,10 @@ public class ScoreRecord implements Comparable<ScoreRecord> {
         this(time, Calendar.getInstance().getTimeInMillis(), name);
     }
 
+    // --------------- getters and setters ---------------------------------
+
     public int getTime() {
         return time;
-    }
-
-    @Override
-    public int compareTo(ScoreRecord scoreRecord) {
-        return this.getTime() - scoreRecord.getTime();
     }
 
     public long getDate() {
@@ -50,4 +49,11 @@ public class ScoreRecord implements Comparable<ScoreRecord> {
     public String getName() {
         return name;
     }
+
+    //---------------------- compare methods -------------------------------
+    @Override
+    public int compareTo(ScoreRecord scoreRecord) {
+        return this.getTime() - scoreRecord.getTime();
+    }
+
 }

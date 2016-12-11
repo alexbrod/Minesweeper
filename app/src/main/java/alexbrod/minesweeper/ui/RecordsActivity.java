@@ -21,6 +21,7 @@ import alexbrod.minesweeper.bl.SharedPrefManager;
 public class RecordsActivity extends AppCompatActivity {
     private static final int TABLE_PADDING = 20;
     private final int MAX_ROWS_IN_TABLE = 10;
+
     private TableLayout tableLayout;
     private Spinner spinner;
     private SharedPrefManager prefs;
@@ -29,14 +30,11 @@ public class RecordsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_records);
-        prefs = new SharedPrefManager(this);
+        prefs = SharedPrefManager.getInstance(this);
         prefs.setNumOfMaxRecordsInTable(MAX_ROWS_IN_TABLE);
 
         createRecordsTable();
         spinnerInit();
-
-
-
     }
 
     private void spinnerInit() {
@@ -123,8 +121,4 @@ public class RecordsActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        this.finish();
-    }
 }

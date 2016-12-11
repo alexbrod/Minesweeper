@@ -17,7 +17,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        prefs = new SharedPrefManager(this);
+        prefs = SharedPrefManager.getInstance(this);
 
         Button btnClearRecords = (Button)findViewById(R.id.btnClearRecords);
         btnClearRecords.setOnClickListener(new View.OnClickListener() {
@@ -36,10 +36,5 @@ public class SettingsActivity extends AppCompatActivity {
                         .show();
             }
         });
-    }
-
-    @Override
-    public void onBackPressed() {
-        this.finish();
     }
 }

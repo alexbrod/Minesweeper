@@ -16,6 +16,7 @@ import alexbrod.minesweeper.R;
 import alexbrod.minesweeper.bl.SharedPrefManager;
 
 public class LevelActivity extends AppCompatActivity {
+
     private GradientDrawable noviceGradientDrawable;
     private GradientDrawable advancedGradientDrawable;
     private GradientDrawable expertGradientDrawable;
@@ -25,19 +26,16 @@ public class LevelActivity extends AppCompatActivity {
     private TextView tvNovice;
     private TextView tvAdvanced;
     private TextView tvExpert;
-
     private SharedPrefManager prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_level);
-        prefs = new SharedPrefManager(this);
+        prefs = SharedPrefManager.getInstance(this);
 
         buttonInit();
         textViewInit();
-
-
     }
 
     private void textViewInit() {
@@ -58,10 +56,6 @@ public class LevelActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        this.finish();
-    }
 
     private void buttonInit() {
         btnNovice = (Button) findViewById(R.id.btnNovice);
