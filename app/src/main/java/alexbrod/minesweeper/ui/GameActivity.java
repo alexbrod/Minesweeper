@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.GridLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import alexbrod.minesweeper.R;
@@ -95,29 +96,24 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
         GradientDrawable gd = cellButton.getGradientDrawable();
 
         if(cellContent == CELL_CONTENT.MINE){
-            cellButton.setText("M");
-            gd.setColor(Color.RED);
-            //cellButton.setBackgroundResource(R.mipmap.minesweeper_launcher);
+            cellButton.setImageResource(R.drawable.mine);
+            cellButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         }
         else if(cellContent == CELL_CONTENT.NUMBER){
             gd.setColor(Color.LTGRAY);
-            cellButton.setText(String.format("%d", gameBoard.getValueOfNumberCell(row, col)));
-            cellButton.defineTextColor(gameBoard.getValueOfNumberCell(row,col));
+            cellButton.defineNumberTexture(gameBoard.getValueOfNumberCell(row,col));
         }
         else{
             gd.setColor(Color.LTGRAY);
         }
-        cellButton.setBackground(gd);
         cellButton.invalidate();
     }
 
     @Override
     public void onSetFlag(int row, int col) {
         CellButton cellButton = getButtonFromGrid(row, col);
-        GradientDrawable gd = cellButton.getGradientDrawable();
-        gd.setColor(Color.MAGENTA);
-        cellButton.setBackground(gd);
-        cellButton.setText("F");
+        cellButton.setImageResource(R.drawable.flag);
+        cellButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
     }
 
     @Override
@@ -126,7 +122,6 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
         GradientDrawable gd = cellButton.getGradientDrawable();
         gd.setColor(Color.GRAY);
         cellButton.setBackground(gd);
-        cellButton.setText("");
     }
 
     @Override

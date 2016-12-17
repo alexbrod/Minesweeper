@@ -5,13 +5,16 @@ import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
+
+import alexbrod.minesweeper.R;
 
 
 /**
  * Created by Alex Brod on 11/24/2016.
  */
 
-public class CellButton extends Button implements View.OnClickListener, View.OnLongClickListener{
+public class CellButton extends ImageButton implements View.OnClickListener, View.OnLongClickListener{
 
     private int col;
     private int row;
@@ -66,33 +69,34 @@ public class CellButton extends Button implements View.OnClickListener, View.OnL
         return cellButtonOnClickListener.cellButtonOnLongClick(this);
     }
 
-    public void defineTextColor(int textVal){
+    public void defineNumberTexture(int textVal){
         switch (textVal){
             case 1:
-                setTextColor(Color.BLUE);
+                setImageResource(R.drawable.number_1);
                 break;
             case 2:
-                setTextColor(Color.GREEN);
+                setImageResource(R.drawable.number_2);
                 break;
             case 3:
-                setTextColor(Color.RED);
+                setImageResource(R.drawable.number_3);
                 break;
             case 4:
-                setTextColor(Color.YELLOW);  //dark blue
+                setImageResource(R.drawable.number_4);
                 break;
             case 5:
-                setTextColor(Color.CYAN);
+                setImageResource(R.drawable.number_5);
                 break;
             case 6:
-                setTextColor(Color.DKGRAY);
+                setImageResource(R.drawable.number_6);
                 break;
             case 7:
-                setTextColor(Color.MAGENTA);
+                setImageResource(R.drawable.number_7);
                 break;
             case 8:
-                setTextColor(Color.BLACK);
+                setImageResource(R.drawable.number_8);
                 break;
 
         }
+        setScaleType(ScaleType.CENTER_INSIDE);
     }
 }
