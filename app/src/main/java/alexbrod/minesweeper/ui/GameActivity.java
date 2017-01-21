@@ -126,12 +126,15 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
         }else{
             locationManager.tryStartLocationUpdates();
         }
-
+        if(gameBoard.getIsFirstCellRevealed()){
+            gameBoard.startGameTimer();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        gameBoard.stopGameTimer();
     }
 
     @Override

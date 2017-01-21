@@ -28,7 +28,7 @@ public class GameBoard {
     private int minesNum;
     private int leftMines;
     private GameInterfaceListener gameInterfaceListener;
-    private Timer playTimer;
+    private Timer gameTimer;
     private Timer minesModeTimer;
     private boolean firstCellReveal;
     private int passedTime;
@@ -265,6 +265,9 @@ public class GameBoard {
     //-------------------------- timer methods ---------------------
 
     public void startGameTimer() {
+        if(gameTimer != null){
+            return;
+        }
         final Handler handler = new Handler();
         TimerTask timerTask = new TimerTask() {
             @Override
@@ -277,14 +280,15 @@ public class GameBoard {
                 });
             }
         };
-        playTimer = new Timer();
-        playTimer.schedule(timerTask, 1000, 1000);
+        gameTimer = new Timer();
+        gameTimer.schedule(timerTask, 1000, 1000);
     }
 
-    private void stopGameTimer(){
-        if(playTimer != null){
-            playTimer.cancel();
-            playTimer.purge();
+    public void stopGameTimer(){
+        if(gameTimer != null){
+            gameTimer.cancel();
+            gameTimer.purge();
+            gameTimer = null;
         }
     }
 
@@ -346,7 +350,9 @@ public class GameBoard {
         return ((Number)gameMatrix[row][col]).getValue();
     }
 
-
+    public boolean getIsFirstCellRevealed(){
+        return firstCellReveal;
+    }
     //------------------------------ DB methods -----------------------
 
     public int getScoreRecordSortedByTime(int ScoreRecordNum){
