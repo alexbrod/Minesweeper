@@ -191,6 +191,7 @@ public class GameBoard {
     public void revealCell(int row, int col){
         if(!firstCellReveal){
             startTimer();
+            firstCellReveal = true;
         }
         Cell cell = gameMatrix[row][col];
         if(!cell.isRevealed()){
@@ -212,8 +213,6 @@ public class GameBoard {
     //-------------------------- timer methods ---------------------
 
     public void startTimer() {
-        firstCellReveal = true;
-        passedTime = 0;
         final Handler handler = new Handler();
         TimerTask timerTask = new TimerTask() {
             @Override
@@ -276,5 +275,9 @@ public class GameBoard {
 
     public void setNewScore(String name) {
         prefs.setNewScore(passedTime, name, prefs.getLevel());
+    }
+
+    public void setNewScore(String name, double longitude, double latitude) {
+        prefs.setNewScore(passedTime, name, longitude, latitude, prefs.getLevel());
     }
 }

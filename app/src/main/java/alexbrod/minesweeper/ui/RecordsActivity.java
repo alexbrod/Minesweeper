@@ -1,40 +1,41 @@
 package alexbrod.minesweeper.ui;
 
-import android.graphics.drawable.Drawable;
+import android.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.Spinner;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 import alexbrod.minesweeper.R;
-import alexbrod.minesweeper.bl.RecordsList;
-import alexbrod.minesweeper.bl.ScoreRecord;
-import alexbrod.minesweeper.bl.SharedPrefManager;
 
 public class RecordsActivity extends AppCompatActivity {
-    private static final int TABLE_PADDING = 20;
-    private final int MAX_ROWS_IN_TABLE = 10;
 
-    private TableLayout tableLayout;
+
+    private static final String GOOGLE_PLAY_MISSING_MSG = "You need to download Google Play Services in order to use this part of the application";
     private Spinner spinner;
-    private SharedPrefManager prefs;
+    private Button btnShowTable;
+    private Button btnShowMap;
+    private boolean isTableViewVisible;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_records);
-        prefs = SharedPrefManager.getInstance(this);
-        prefs.setNumOfMaxRecordsInTable(MAX_ROWS_IN_TABLE);
 
-        createRecordsTable();
+        btnShowTable = (Button) findViewById(R.id.btnShowTable);
+        btnShowMap = (Button) findViewById(R.id.btnShowMap);
+
+        initButtons();
         spinnerInit();
+        updateFragmentHolderWithTable();
+
     }
 
     private void spinnerInit() {
@@ -42,7 +43,7 @@ public class RecordsActivity extends AppCompatActivity {
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long l) {
-                updateTable(pos);
+                updateLevelInFragment(pos);
             }
 
             @Override
@@ -52,73 +53,105 @@ public class RecordsActivity extends AppCompatActivity {
         });
     }
 
-    private void updateTable(int level) {
-        RecordsList list = prefs.getRecordsListSortedByTime(level);
-        if(list == null){
-            updateTableWithNone(1);
-        }else{
-            int i;
-            //starts from 1 because need to skip header
-            for (i = 1; i <= list.size() && i <= MAX_ROWS_IN_TABLE; i++) {
-                TableRow row = (TableRow) tableLayout.getChildAt(i);
-                ScoreRecord rec = list.get(i-1);
-                TextView tvTime = (TextView) row.getChildAt(1);
-                TextView tvName = (TextView) row.getChildAt(2);
-                TextView tvDate = (TextView) row.getChildAt(3);
-                tvDate.setText(formatDate(rec.getDate()));
-                tvName.setText(rec.getName());
-                tvTime.setText(String.format("%d",rec.getTime()));
+    private void updateLevelInFragment(int pos) {
+        //maybe should change to abstract fragment
+        RecordsTableFragment tableFragment = (RecordsTableFragment) getSupportFragmentManager()
+                .findFragmentByTag("RecordsTableFragment");
+        if(tableFragment != null){
+            tableFragment.updateTableToLevel(pos);
+            return;
+        }
+
+        RecordsMapFragment mapFragment = (RecordsMapFragment) getSupportFragmentManager()
+                .findFragmentByTag("RecordsMapFragment");
+        if(mapFragment != null){
+            mapFragment.updateMapToLevel(pos);
+            return;
+        }
+
+        Log.e(this.getLocalClassName(),"Cant update level, Fragment does not exist");
+
+    }
+
+    private void initButtons(){
+        isTableViewVisible = true;
+        btnShowTable.setBackground(getResources().getDrawable(
+                R.drawable.minesweeper_base_btn_pressed,null));
+        btnShowMap.setBackground(getResources().getDrawable(
+                R.drawable.minesweeper_base_btn,null));
+
+
+
+        btnShowTable.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!isTableViewVisible){
+                    btnShowTable.setBackground(getResources().getDrawable(
+                            R.drawable.minesweeper_base_btn_pressed,null));
+                    btnShowMap.setBackground(getResources().getDrawable(
+                            R.drawable.minesweeper_base_btn,null));
+                    isTableViewVisible = true;
+                    updateFragmentHolderWithTable();
+
+                    btnShowMap.invalidate();
+                    btnShowTable.invalidate();
+                }
             }
-            updateTableWithNone(i);
+        });
+
+        btnShowMap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(isTableViewVisible){
+                    btnShowMap.setBackground(getResources().getDrawable(
+                            R.drawable.minesweeper_base_btn_pressed,null));
+                    btnShowTable.setBackground(getResources().getDrawable(
+                            R.drawable.minesweeper_base_btn,null));
+                    isTableViewVisible = false;
+                    updateFragmentHolderWithMap();
+                    btnShowMap.invalidate();
+                    btnShowTable.invalidate();
+                }
+            }
+        });
+    }
+
+    private void updateFragmentHolderWithTable(){
+        // Check that the activity is using the layout version with
+        // the fragment_container FrameLayout
+        if (findViewById(R.id.records_fragment_container) != null) {
+            // Create a new Fragment to be placed in the activity layout
+            RecordsTableFragment recordsTableFragment = RecordsTableFragment.newInstance();
+
+            // Add the fragment to the 'fragment_container' FrameLayout
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.records_fragment_container, recordsTableFragment
+                            ,"RecordsTableFragment").commit();
         }
     }
 
-    private String formatDate(long milliSeconds){
-        SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
-        return formatter.format(new Date(milliSeconds));
-    }
-
-    private void updateTableWithNone(int from){
-        for (int i = from; i <= MAX_ROWS_IN_TABLE; i++) {
-            TableRow row = (TableRow) tableLayout.getChildAt(i);
-            TextView tvTime = (TextView) row.getChildAt(1);
-            TextView tvName = (TextView) row.getChildAt(2);
-            TextView tvDate = (TextView) row.getChildAt(3);
-            tvDate.setText("None");
-            tvName.setText("None");
-            tvTime.setText("None");
-
+    private void updateFragmentHolderWithMap(){
+        //Check if Google Play Services is installed
+        GoogleApiAvailability api = GoogleApiAvailability.getInstance();
+        int code = api.isGooglePlayServicesAvailable(this);
+        if (code == ConnectionResult.SUCCESS) {
+            // Check that the activity is using the layout version with
+            // the fragment_container FrameLayout
+            if (findViewById(R.id.records_fragment_container) != null) {
+                // Create a new Fragment to be placed in the activity layout
+                RecordsMapFragment recordsMapFragment = RecordsMapFragment.newInstance();
+                // Add the fragment to the 'fragment_container' FrameLayout
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.records_fragment_container, recordsMapFragment
+                                ,"RecordsMapFragment").commit();
+            }
+        } else {
+            AlertDialog alertDialog = new AlertDialog.Builder(this)
+                .setMessage(GOOGLE_PLAY_MISSING_MSG)
+                .setCancelable(false)
+                .create();
+            alertDialog.show();
         }
+
     }
-
-    private void createRecordsTable() {
-        tableLayout = (TableLayout)findViewById(R.id.recordsTable);
-        Drawable drawable = getResources().getDrawable(R.drawable.minesweeper_table,null);
-        for (int i = 1; i <= MAX_ROWS_IN_TABLE; i++) {
-            TableRow tableRow = new TableRow(this);
-            tableLayout.addView(tableRow);
-            TextView tvNumber = new TextView(this);
-            TextView tvTime = new TextView(this);
-            TextView tvName = new TextView(this);
-            TextView tvDate = new TextView(this);
-
-            tvNumber.setBackground(drawable);
-            tvDate.setBackground(drawable);
-            tvName.setBackground(drawable);
-            tvTime.setBackground(drawable);
-
-            tvNumber.setPadding(TABLE_PADDING,TABLE_PADDING,TABLE_PADDING,TABLE_PADDING);
-            tvDate.setPadding(TABLE_PADDING,TABLE_PADDING,TABLE_PADDING,TABLE_PADDING);
-            tvName.setPadding(TABLE_PADDING,TABLE_PADDING,TABLE_PADDING,TABLE_PADDING);
-            tvTime.setPadding(TABLE_PADDING,TABLE_PADDING,TABLE_PADDING,TABLE_PADDING);
-
-            tableRow.addView(tvNumber);
-            tableRow.addView(tvTime);
-            tableRow.addView(tvName);
-            tableRow.addView(tvDate);
-
-            tvNumber.setText(String.format("%d",i));
-        }
-    }
-
 }

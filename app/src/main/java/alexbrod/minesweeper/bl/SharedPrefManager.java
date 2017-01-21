@@ -45,7 +45,7 @@ public class SharedPrefManager {
         return prefs.getInt(LEVEL, ADVANCED_LEVEL);
     }
 
-    private RecordsList getRecordList(int level){
+    public RecordsList getRecordList(int level){
         Gson gson = new Gson();
         String json = prefs.getString(intLevelToString(level) + "List", "");
         if(json.isEmpty()){
@@ -65,7 +65,7 @@ public class SharedPrefManager {
     private ScoreRecord getBestScoreRecord(int level){
         RecordsList list = getRecordList(level);
         if(list == null){
-            return new ScoreRecord();
+            return new ScoreRecord(Integer.MAX_VALUE);
         }else{
             return list.getShortestTimeRecord();
         }
@@ -78,7 +78,7 @@ public class SharedPrefManager {
     private ScoreRecord getScoreRecordSortedByTimeFromList(int level, int scoreRecordNum){
         RecordsList list = getRecordsListSortedByTime(level);
         if(list == null || scoreRecordNum >= list.size()){
-            return new ScoreRecord();
+            return new ScoreRecord(Integer.MAX_VALUE);
         }else{
             return list.get(scoreRecordNum);
         }
@@ -87,6 +87,11 @@ public class SharedPrefManager {
 
     public void setNewScore(int passedTime, String name, int level) {
         saveRecordToScoreList(new ScoreRecord(passedTime,name),level);
+    }
+
+    public void setNewScore(int passedTime, String name, double longitude, double latitude,
+                            int level) {
+        saveRecordToScoreList(new ScoreRecord(passedTime,name,longitude,latitude),level);
     }
 
     private void saveRecordToScoreList(ScoreRecord record, int level){
@@ -99,7 +104,7 @@ public class SharedPrefManager {
         list.add(record);
         String json = gson.toJson(list);
         prefsEditor.putString(intLevelToString(level) + "List", json);
-        prefsEditor.commit();
+        prefsEditor.apply();
     }
 
     // ------------------- convert methods -------------------------------
@@ -132,8 +137,8 @@ public class SharedPrefManager {
     }
 
     // ------------------------- misc methods ------------------------------------
-    public void setNumOfMaxRecordsInTable(int numOfMaxRecordsInTable) {
-        prefs.edit().putInt("NumOfMaxRecordsInTable",numOfMaxRecordsInTable).commit();
+    public void setNumOfMaxRecordsToShow(int numOfMaxRecordsInTable) {
+        prefs.edit().putInt("NumOfMaxRecordsInTable",numOfMaxRecordsInTable).apply();
     }
 
     public int getNumOfMaxRecordsInTable() {
@@ -141,8 +146,8 @@ public class SharedPrefManager {
     }
 
     public void clearRecords() {
-        prefs.edit().remove(intLevelToString(NOVICE_LEVEL) + "List").commit();
-        prefs.edit().remove(intLevelToString(ADVANCED_LEVEL) + "List").commit();
-        prefs.edit().remove(intLevelToString(EXPERT_LEVEL) + "List").commit();
+        prefs.edit().remove(intLevelToString(NOVICE_LEVEL) + "List").apply();
+        prefs.edit().remove(intLevelToString(ADVANCED_LEVEL) + "List").apply();
+        prefs.edit().remove(intLevelToString(EXPERT_LEVEL) + "List").apply();
     }
 }

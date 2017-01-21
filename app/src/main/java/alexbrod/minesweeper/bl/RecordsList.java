@@ -13,7 +13,7 @@ public class RecordsList extends ArrayList<ScoreRecord>  {
     private ScoreRecord lastTimeRecord;
 
     public ScoreRecord getShortestTimeRecord(){
-        ScoreRecord shortestTimeRecord = new ScoreRecord();
+        ScoreRecord shortestTimeRecord = new ScoreRecord(Integer.MAX_VALUE);
         for (int i = 0; i < this.size(); i++) {
             if(this.get(i).getTime() < shortestTimeRecord.getTime()){
                 shortestTimeRecord = this.get(i);

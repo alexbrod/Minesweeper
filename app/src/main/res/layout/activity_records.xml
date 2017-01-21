@@ -16,41 +16,44 @@
         android:id="@+id/spnrChooseLevel"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.1"
+        android:layout_weight="0.15"
         android:entries="@array/level_array">
 
     </Spinner>
 
-    <TableLayout
-        android:id="@+id/recordsTable"
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:stretchColumns="0,1,2,3"
-        android:layout_weight="0.9">
+        android:layout_weight="0.1">
 
-        <TableRow
-            android:id="@+id/tableHead">
-            <TextView
-                android:text="No."
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/minesweeper_table"/>
-            <TextView
-                android:text="Time"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/minesweeper_table"/>
-            <TextView
-                android:text="Name"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/minesweeper_table"/>
-            <TextView
-                android:text="Date"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/minesweeper_table"/>
+        <Button
+            android:id="@+id/btnShowTable"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.5"
+            android:text="Table" />
 
-        </TableRow>
-    </TableLayout>
+        <Button
+            android:id="@+id/btnShowMap"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.5"
+            android:text="Map" />
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.1"/>
+
+
+    <FrameLayout
+        android:layout_height="0dp"
+        android:layout_width="match_parent"
+        android:layout_weight="0.65"
+        android:id="@+id/records_fragment_container">
+
+    </FrameLayout>
 </LinearLayout>

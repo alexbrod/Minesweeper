@@ -72,6 +72,7 @@ public class LevelActivity extends AppCompatActivity {
         btnNovice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //can switch this to setBackground with drawables
                 noviceGradientDrawable.setStroke(3, Color.WHITE);
                 advancedGradientDrawable.setStroke(1,Color.BLACK);
                 expertGradientDrawable.setStroke(1,Color.BLACK);
