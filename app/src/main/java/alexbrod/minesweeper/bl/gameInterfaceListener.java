@@ -18,4 +18,5 @@ public interface GameInterfaceListener {
     void onVictory();
     void updateTimeView(int secondsPassed);
     void updateNumOfMinesView(int mines);
+    void onCellCovered(int row, int col);
 }

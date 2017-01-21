@@ -19,6 +19,8 @@ public class GameBoard {
     private static final int ADVANCED_LEVEL_MINES_NUM = 7;
     private static final int EXPERT_LEVEL_SIZE = 10;
     private static final int EXPERT_LEVEL_MINES_NUM = 10;
+    private static final long MINE_MODE_DROP_RATE = 1000; // in milliSeconds
+
 
     private int rows;
     private int cols;
@@ -27,6 +29,7 @@ public class GameBoard {
     private int leftMines;
     private GameInterfaceListener gameInterfaceListener;
     private Timer playTimer;
+    private Timer minesModeTimer;
     private boolean firstCellReveal;
     private int passedTime;
     private SharedPrefManager prefs;
@@ -40,7 +43,7 @@ public class GameBoard {
         setMinesInRandomCells();
         firstCellReveal = false;
         passedTime = 0;
-        stopTimer();
+        stopGameTimer();
     }
 
     // ------------------------- BL methods ---------------------------------
@@ -85,6 +88,57 @@ public class GameBoard {
         }
     }
 
+    private void setMineInRandomCell(){
+        int index = (int)(Math.random() * (rows * cols));
+        int startIndex = index;
+        boolean mineDropped = false;
+        boolean boardRoundTripComplete = false;
+        while (!mineDropped && !boardRoundTripComplete) {
+            if(!(gameMatrix[index/rows][index%rows] instanceof Mine)){
+                gameMatrix[index/rows][index%rows] = new Mine();
+                mineDropped = true;
+                gameMatrix[index/rows][index%rows].setRevealed(false);
+                gameMatrix[index/rows][index%rows].setEmpty(false);
+                gameInterfaceListener.onCellCovered(index/rows,index%rows);
+                gameInterfaceListener.updateNumOfMinesView(++leftMines);
+                setNumbersAroundMineWithGuiUpdates(index/rows,index%rows);
+            }
+            index++;
+            index = index%(rows * cols);
+            if(startIndex == index){
+                boardRoundTripComplete = true;
+            }
+        }
+    }
+
+    private void setNumbersAroundMineWithGuiUpdates(int mineRow, int mineCol){
+        /*
+        go through all cells around the mine and put numbers where
+        there is no mine, the center cell checked also from convenience reasons
+        */
+        for (int i = mineRow - 1; i < mineRow + 2; i++) { //3 rows
+            for (int j = mineCol - 1; j < mineCol + 2; j++) { //3 cols
+                try{
+                    if(gameMatrix[i][j] instanceof Number){
+                        ((Number)gameMatrix[i][j]).setValue(
+                                ((Number)gameMatrix[i][j]).getValue() + 1);
+                        gameMatrix[i][j].setRevealed(false);
+                        gameMatrix[i][j].setEmpty(false);
+                        gameInterfaceListener.onCellCovered(i,j);
+                    }else if(!(gameMatrix[i][j] instanceof Mine)){
+                        gameMatrix[i][j] = new Number(1);
+                        gameMatrix[i][j].setRevealed(false);
+                        gameMatrix[i][j].setEmpty(false);
+                        gameInterfaceListener.onCellCovered(i,j);
+                    }
+                } catch (IndexOutOfBoundsException e){
+                    //Tried to check cell that is out of the bounds of the matrix
+                }catch (Exception e){
+                    System.out.println(e.getMessage());
+                }
+            }
+        }
+    }
 
     private void setNumbersAroundMine(int mineRow, int mineCol){
         /*
@@ -105,9 +159,7 @@ public class GameBoard {
                 }catch (Exception e){
                     System.out.println(e.getMessage());
                 }
-
             }
-
         }
     }
 
@@ -150,7 +202,7 @@ public class GameBoard {
                 }
             }
         }
-        stopTimer();
+        stopGameTimer();
         gameInterfaceListener.onVictory();
     }
 
@@ -165,7 +217,7 @@ public class GameBoard {
                 }
             }
         }
-        stopTimer();
+        stopGameTimer();
         gameInterfaceListener.onGameOver();
 
     }
@@ -190,7 +242,7 @@ public class GameBoard {
 
     public void revealCell(int row, int col){
         if(!firstCellReveal){
-            startTimer();
+            startGameTimer();
             firstCellReveal = true;
         }
         Cell cell = gameMatrix[row][col];
@@ -212,7 +264,7 @@ public class GameBoard {
 
     //-------------------------- timer methods ---------------------
 
-    public void startTimer() {
+    public void startGameTimer() {
         final Handler handler = new Handler();
         TimerTask timerTask = new TimerTask() {
             @Override
@@ -229,10 +281,38 @@ public class GameBoard {
         playTimer.schedule(timerTask, 1000, 1000);
     }
 
-    private void stopTimer(){
+    private void stopGameTimer(){
         if(playTimer != null){
             playTimer.cancel();
             playTimer.purge();
+        }
+    }
+
+    public void startMinesModeTimer() {
+        if(minesModeTimer != null){
+            return;
+        }
+        final Handler handler = new Handler();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        setMineInRandomCell();
+                    }
+                });
+            }
+        };
+        minesModeTimer = new Timer();
+        minesModeTimer.schedule(timerTask, MINE_MODE_DROP_RATE, MINE_MODE_DROP_RATE);
+    }
+
+    public void stopMinesModeTimer(){
+        if(minesModeTimer != null){
+            minesModeTimer.cancel();
+            minesModeTimer.purge();
+            minesModeTimer = null;
         }
     }
 

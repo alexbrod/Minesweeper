@@ -32,6 +32,8 @@
         <meta-data android:name="com.google.android.geo.API_KEY"
             android:value='AIzaSyCigeroebcCZBR9n8ToGfaSImdXI0SdHlo'/>
 
+        <service android:name=".bl.TiltSamplingBoundService" />
+
         <activity
             android:name=".ui.MenuActivity"
             android:screenOrientation="portrait">
