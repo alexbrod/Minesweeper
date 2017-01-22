@@ -145,22 +145,30 @@ public class RecordsMapFragment extends SupportMapFragment implements OnMapReady
     public void updateMapToLevel(int level) {
         RecordsList list = prefs.getRecordList(level);
         recordsMap.clear(); //clear all previous markers if exist
-        double NELat = ISRAEL_HERZELIA_N_E_LAT;
-        double NELong = ISRAEL_HERZELIA_N_E_LONG;
-        double SWLat = ISRAEL_HERZELIA_S_W_LAT;
-        double SWLong = ISRAEL_HERZELIA_S_W_LONG;
+        double NELat = 0;
+        double NELong = 0;
+        double SWLat = 0;
+        double SWLong = 0;
+        boolean isFirstMarker = true;
+
         if(list != null) {
             for (int i = 0; i < list.size() && i < MAX_MARKERS_IN_MAP; i++) {
                 ScoreRecord rec = list.get(i);
                 //Double.MAX_VALUE returned when there is no location parameters
                 if (rec.getLatitude() != Double.MAX_VALUE
                         && rec.getLongitude() != Double.MAX_VALUE) {
+
+                    if(isFirstMarker){
+                        SWLat = NELat = rec.getLatitude();
+                        SWLong = NELong = rec.getLongitude();
+                        isFirstMarker = false;
+                    }
                     // create marker
                     MarkerOptions marker = new MarkerOptions();
                     marker.position(new LatLng(rec.getLatitude(), rec.getLongitude()));
                     marker.title("Name: " + rec.getName());
                     marker.snippet("Time: " + rec.getTime()
-                            + "\nDate: " + formatDate(rec.getDate()));
+                            + "  Date: " + formatDate(rec.getDate()));
 
                     // Changing marker icon
                     marker.icon(BitmapDescriptorFactory
@@ -182,7 +190,12 @@ public class RecordsMapFragment extends SupportMapFragment implements OnMapReady
                 }
             }
         }
-
+        if(isFirstMarker){
+            NELat = ISRAEL_HERZELIA_N_E_LAT;
+            NELong = ISRAEL_HERZELIA_N_E_LONG;
+            SWLat = ISRAEL_HERZELIA_S_W_LAT;
+            SWLong = ISRAEL_HERZELIA_S_W_LONG;
+        }
         // Create a LatLngBounds
         LatLngBounds latLngBounds = new LatLngBounds(
                 new LatLng(SWLat - MAP_PADDING, SWLong - MAP_PADDING),

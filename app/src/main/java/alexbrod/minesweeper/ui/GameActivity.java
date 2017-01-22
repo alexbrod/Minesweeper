@@ -1,5 +1,7 @@
 package alexbrod.minesweeper.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,6 +18,11 @@ import android.util.Log;
 import android.view.Display;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AnticipateInterpolator;
+import android.view.animation.AnticipateOvershootInterpolator;
+import android.view.animation.CycleInterpolator;
+import android.view.animation.OvershootInterpolator;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageView;
@@ -34,6 +41,8 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
     private static final String YOU_WON = "You Won!";
     private static final String PLAY_AGAIN = "Do you want to play another game?";
     private static final String GAME_OVER = "GAME OVER";
+    private static final int ANIMATION_DEALY = 100;
+    private static final float ANIMATION_CYCLES = 3;
     private final int GAME_BOARD_RETIO = 2;
 
     private int columnCount;
@@ -199,12 +208,38 @@ public class GameActivity extends AppCompatActivity implements CellButtonOnClick
 
     @Override
     public void onGameOver() {
-        playAgagainAlertDialog.setTitle(GAME_OVER);
-        playAgagainAlertDialog.show();
+        CellButton lastCellButton = getButtonFromGrid(rowCount - 1, columnCount - 1);
+        lastCellButton.animate().setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                playAgagainAlertDialog.setTitle(GAME_OVER);
+                playAgagainAlertDialog.show();
+            }
+        });
+        for (int i = 0; i < rowCount; i++) {
+            for (int j = 0; j < columnCount; j++) {
+                CellButton cellButton = getButtonFromGrid(i,j);
+                cellButton.setEnabled(false);
+                cellButton.animate().setInterpolator(new AccelerateDecelerateInterpolator());
+                cellButton.animate().setStartDelay(ANIMATION_DEALY * ( i + j));
+                cellButton.animate().translationY(-1 * dm.heightPixels).start();
+            }
+        }
     }
 
     @Override
     public void onVictory() {
+        //animation
+        for (int i = 0; i < rowCount; i++) {
+            for (int j = 0; j < columnCount; j++) {
+                CellButton cellButton = getButtonFromGrid(i,j);
+                cellButton.setEnabled(false);
+                cellButton.animate().setInterpolator(new CycleInterpolator(ANIMATION_CYCLES));
+                cellButton.animate().setStartDelay(ANIMATION_DEALY * ( i + j)).setDuration((long) (ANIMATION_CYCLES * 1000));
+                cellButton.animate().rotationX(180).start();
+            }
+        }
         final EditText input = new EditText(this);
         AlertDialog.Builder winAlertDialog = new AlertDialog.Builder(this);
         winAlertDialog.setTitle(YOU_WON)
